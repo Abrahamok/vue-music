@@ -24,8 +24,8 @@
         >
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd" ref="imageWrapper">
-                <img ref="image" :class="cdCls" class="image" :src="currentSong.image">
+              <div class="cd">
+                <svg-rotate ref='fullscreenCd' width="100%" height="100%" duration="20s" :imgUrl="currentSong.image"></svg-rotate>
               </div>
             </div>
             <div class="playing-lyric-wrapper">
@@ -82,8 +82,8 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <div class="imgWrapper" ref="miniWrapper">
-            <img ref="miniImage" :class="cdCls" width="40" height="40" :src="currentSong.image">
+          <div class="imgWrapper">
+            <svg-rotate ref='miniCd' width="40" height="40" duration="15s" :imgUrl="currentSong.image"></svg-rotate>
           </div>
         </div>
         <div class="text">
@@ -117,6 +117,7 @@
   import Scroll from 'base/scroll/scroll'
   import {playerMixin} from 'common/js/mixin'
   import Playlist from 'components/playlist/playlist'
+  import SvgRotate from 'base/svg-rotate/svg-rotate'
 
   const transform = prefixStyle('transform')
   const transitionDuration = prefixStyle('transitionDuration')
@@ -433,21 +434,6 @@
           scale
         }
       },
-      /**
-       * 计算内层Image的transform，并同步到外层容器
-       * @param wrapper
-       * @param inner
-       */
-      syncWrapperTransform (wrapper, inner) {
-        if (!this.$refs[wrapper]) {
-          return
-        }
-        let imageWrapper = this.$refs[wrapper]
-        let image = this.$refs[inner]
-        let wTransform = getComputedStyle(imageWrapper)[transform]
-        let iTransform = getComputedStyle(image)[transform]
-        imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
-      },
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN'
       }),
@@ -486,12 +472,10 @@
         this.$nextTick(() => {
           newPlaying ? audio.play() : audio.pause()
         })
-        if (!newPlaying) {
-          if (this.fullScreen) {
-            this.syncWrapperTransform('imageWrapper', 'image')
-          } else {
-            this.syncWrapperTransform('miniWrapper', 'miniImage')
-          }
+        if (this.fullScreen) {
+          newPlaying ? this.$refs.fullscreenCd.play() : this.$refs.fullscreenCd.pause()
+        } else {
+          newPlaying ? this.$refs.miniCd.play() : this.$refs.miniCd.pause()
         }
       },
       fullScreen(newVal) {
@@ -500,6 +484,11 @@
             this.$refs.lyricList.refresh()
             this.$refs.progressBar.setProgressOffset(this.percent)
           }, 20)
+          // 同步mini-cd下的播放状态
+          this.playing ? this.$refs.fullscreenCd.play() : this.$refs.fullscreenCd.pause()
+        } else {
+          // 同步fullscreen-cd下的播放状态
+          this.playing ? this.$refs.miniCd.play() : this.$refs.miniCd.pause()
         }
       }
     },
@@ -507,7 +496,8 @@
       ProgressBar,
       ProgressCircle,
       Scroll,
-      Playlist
+      Playlist,
+      SvgRotate
     }
   }
 </script>
@@ -586,6 +576,8 @@
               width: 100%
               height: 100%
               border-radius: 50%
+              box-sizing: border-box
+              border: 10px solid rgba(255,255,255,.1)
               .image
                 position: absolute
                 left: 0

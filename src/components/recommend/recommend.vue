@@ -1,49 +1,48 @@
 <template>
   <div class="recommend" ref="recommend">
-    <scroll ref="scroll" class="recommend-content" :data="discList">
-      <div>
-        <div v-if="recommends.length" class="slider-wrapper">
-          <div class="slider-content">
-            <slider ref="slider">
-              <div v-for="item in recommends">
-                <a :href="item.linkUrl">
-                  <img @load="loadImage" :src="item.picUrl">
-                </a>
-              </div>
-            </slider>
-          </div>
-        </div>
-        <div class="recommend-list">
-          <h1 class="list-title">热门歌单推荐</h1>
-          <ul>
-            <li @click="selectItem(item)" v-for="item in discList" class="item">
-              <div class="icon">
-                <img width="60" height="60" v-lazy="item.imgurl">
-              </div>
-              <div class="text">
-                <h2 class="name" v-html="item.creator.name"></h2>
-                <p class="desc" v-html="item.dissname"></p>
-              </div>
-            </li>
-          </ul>
+    <cube-scroll ref="scroll" class="recommend-content">
+      <div v-if="recommends.length" class="slider-wrapper">
+        <div class="slider-content">
+          <cube-slide ref="slider">
+            <cube-slide-item v-for="(item,index) in recommends" :key="index">
+              <a :href="item.linkUrl">
+                <img @load="loadImage" :src="item.picUrl">
+              </a>
+            </cube-slide-item>
+            <template slot="dots" slot-scope="props">
+              <span class="dot" :class="{active: props.current === index}" v-for="(item, index) in props.dots"></span>
+            </template>
+          </cube-slide>
         </div>
       </div>
-      <div class="loading-container" v-show="!discList.length">
-        <loading></loading>
+      <div class="recommend-list">
+        <h1 class="list-title">热门歌单推荐</h1>
+        <ul>
+          <li @click="selectItem(item)" v-for="item in discList" class="item">
+            <div class="icon">
+              <img width="60" height="60" v-lazy="item.imgurl">
+            </div>
+            <div class="text">
+              <h2 class="name" v-html="item.creator.name"></h2>
+              <p class="desc" v-html="item.dissname"></p>
+            </div>
+          </li>
+        </ul>
       </div>
-    </scroll>
+    </cube-scroll>
+    <div class="loading-container" v-show="!discList.length">
+      <loading></loading>
+    </div>
     <router-view></router-view>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import Slider from 'base/slider/slider'
   import Loading from 'base/loading/loading'
-  import Scroll from 'base/scroll/scroll'
-  import {getRecommend, getDiscList} from 'api/recommend'
-  import {playlistMixin} from 'common/js/mixin'
-  import {ERR_OK} from 'api/config'
-  import {mapMutations} from 'vuex'
+  import { getRecommend, getDiscList } from 'api/recommend'
+  import { playlistMixin } from 'common/js/mixin'
+  import { ERR_OK } from 'api/config'
+  import { mapMutations } from 'vuex'
 
   export default {
     mixins: [playlistMixin],
@@ -103,14 +102,12 @@
       })
     },
     components: {
-      Slider,
-      Loading,
-      Scroll
+      Loading
     }
   }
 </script>
 
-<style scoped lang="stylus" rel="stylesheet/stylus">
+<style lang="stylus" rel="stylesheet/stylus">
   @import "~common/stylus/variable"
 
   .recommend
@@ -133,6 +130,19 @@
           left: 0
           width: 100%
           height: 100%
+          .cube-slide-dots
+            bottom: 12px
+          .dot
+            display: inline-block
+            margin: 0 4px
+            width: 8px
+            height: 8px
+            border-radius: 50%
+            background: $color-text-l
+            &.active
+              width: 20px
+              border-radius: 5px
+              background: $color-text-ll
       .recommend-list
         .list-title
           height: 65px
@@ -162,9 +172,9 @@
               color: $color-text
             .desc
               color: $color-text-d
-      .loading-container
-        position: absolute
-        width: 100%
-        top: 50%
-        transform: translateY(-50%)
+    .loading-container
+      position: absolute
+      width: 100%
+      top: 50%
+      transform: translateY(-50%)
 </style>

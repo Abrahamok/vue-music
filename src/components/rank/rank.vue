@@ -1,6 +1,6 @@
 <template>
   <div class="rank" ref="rank">
-    <scroll :data="topList" class="toplist" ref="toplist">
+    <cube-scroll class="toplist" ref="toplist">
       <ul>
         <li @click="selectItem(item)" class="item" v-for="item in topList">
           <div class="icon">
@@ -17,13 +17,12 @@
       <div class="loading-container" v-show="!topList.length">
         <loading></loading>
       </div>
-    </scroll>
+    </cube-scroll>
     <router-view></router-view>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
   import {getTopList} from 'api/rank'
   import {ERR_OK} from 'api/config'
@@ -72,7 +71,6 @@
       }
     },
     components: {
-      Scroll,
       Loading
     }
   }

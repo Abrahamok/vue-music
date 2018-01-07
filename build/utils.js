@@ -53,6 +53,12 @@ exports.cssLoaders = function (options) {
     }
   }
 
+  const stylusOptions = {
+    'resolve url': true,
+    // 这里 新增 import 配置项，指向自定义主题文件
+    import: [path.resolve(__dirname, '../src/theme')]
+  }
+
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
   return {
     css: generateLoaders(),
@@ -60,8 +66,8 @@ exports.cssLoaders = function (options) {
     less: generateLoaders('less'),
     sass: generateLoaders('sass', {indentedSyntax: true}),
     scss: generateLoaders('sass'),
-    stylus: generateLoaders('stylus'),
-    styl: generateLoaders('stylus')
+    stylus: generateLoaders('stylus', stylusOptions),
+    styl: generateLoaders('stylus', stylusOptions)
   }
 }
 

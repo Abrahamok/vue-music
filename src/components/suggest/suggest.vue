@@ -1,32 +1,28 @@
 <template>
-  <scroll ref="suggest"
-          class="suggest"
-          :data="result"
-          :pullup="pullup"
-          :beforeScroll="beforeScroll"
-          @scrollToEnd="searchMore"
-          @beforeScroll="listScroll"
-  >
-    <ul class="suggest-list">
-      <li @click="selectItem(item)" class="suggest-item" v-for="item in result">
-        <div class="icon">
-          <i :class="getIconCls(item)"></i>
-        </div>
-        <div class="name">
-          <p class="text" v-html="getDisplayName(item)"></p>
-        </div>
-      </li>
-      <loading v-show="hasMore" title=""></loading>
-    </ul>
+  <div class="suggest">
+    <cube-scroll ref="suggest"
+                 :data="result"
+                 :options="scrollOptions"
+                 @pulling-up="searchMore"
+    >
+      <ul class="suggest-list">
+        <li @click="selectItem(item)" class="suggest-item" v-for="item in result">
+          <div class="icon">
+            <i :class="getIconCls(item)"></i>
+          </div>
+          <div class="name">
+            <p class="text" v-html="getDisplayName(item)"></p>
+          </div>
+        </li>
+      </ul>
+    </cube-scroll>
     <div v-show="!hasMore && !result.length" class="no-result-wrapper">
       <no-result title="抱歉，暂无搜索结果"></no-result>
     </div>
-  </scroll>
+  </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import Scroll from 'base/scroll/scroll'
-  import Loading from 'base/loading/loading'
   import NoResult from 'base/no-result/no-result'
   import { search } from 'api/search'
   import { ERR_OK } from 'api/config'
@@ -51,10 +47,14 @@
     data() {
       return {
         page: 1,
-        pullup: true,
-        beforeScroll: true,
         hasMore: true,
-        result: []
+        result: [],
+        scrollOptions: {
+          pullUpLoad: {
+            threshold: 0,
+            txt: ''
+          }
+        }
       }
     },
     methods: {
@@ -74,6 +74,7 @@
       },
       searchMore() {
         if (!this.hasMore) {
+          this.$refs.suggest.forceUpdate()
           return
         }
         this.page++
@@ -81,11 +82,12 @@
           if (res.code === ERR_OK) {
             this.result = this.result.concat(this._genResult(res.data))
             this._checkMore(res.data)
+          } else {
+            this.$refs.suggest.forceUpdate()
           }
+        }).catch(() => {
+          this.$refs.suggest.forceUpdate()
         })
-      },
-      listScroll() {
-        this.$emit('listScroll')
       },
       selectItem(item) {
         if (item.type === TYPE_SINGER) {
@@ -157,8 +159,6 @@
       }
     },
     components: {
-      Scroll,
-      Loading,
       NoResult
     }
   }
@@ -171,6 +171,7 @@
   .suggest
     height: 100%
     overflow: hidden
+    position: relative
     .suggest-list
       padding: 0 30px
       .suggest-item
@@ -192,7 +193,8 @@
           no-wrap()
     .no-result-wrapper
       position: absolute
-      width: 100%
       top: 50%
+      z-index: 10
+      width: 100%
       transform: translateY(-50%)
 </style>

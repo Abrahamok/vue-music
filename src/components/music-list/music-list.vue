@@ -14,25 +14,26 @@
       <div class="filter" ref="filter"></div>
     </div>
     <div class="bg-layer" ref="layer"></div>
-    <scroll :data="songs" @scroll="scroll"
-            :listen-scroll="listenScroll" :probe-type="probeType" class="list" ref="list">
-      <div class="song-list-wrapper">
-        <song-list :songs="songs" :rank="rank" @select="selectItem"></song-list>
-      </div>
+    <div class="scroll-wrapper" ref="scrollWrapper">
+      <cube-scroll @scroll="scroll"
+                   :listen-scroll="listenScroll" :options="scrollOptions" ref="scroll">
+        <div class="song-list-wrapper">
+          <song-list :songs="songs" :rank="rank" @select="selectItem"></song-list>
+        </div>
+      </cube-scroll>
       <div v-show="!songs.length" class="loading-container">
         <loading></loading>
       </div>
-    </scroll>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
   import SongList from 'base/song-list/song-list'
-  import {prefixStyle} from 'common/js/dom'
-  import {playlistMixin} from 'common/js/mixin'
-  import {mapActions} from 'vuex'
+  import { prefixStyle } from 'common/js/dom'
+  import { playlistMixin } from 'common/js/mixin'
+  import { mapActions } from 'vuex'
 
   const RESERVED_HEIGHT = 40
   const transform = prefixStyle('transform')
@@ -69,19 +70,21 @@
       }
     },
     created() {
-      this.probeType = 3
+      this.scrollOptions = {
+        probeType: 3
+      }
       this.listenScroll = true
     },
     mounted() {
       this.imageHeight = this.$refs.bgImage.clientHeight
       this.minTransalteY = -this.imageHeight + RESERVED_HEIGHT
-      this.$refs.list.$el.style.top = `${this.imageHeight}px`
+      this.$refs.scrollWrapper.style.top = `${this.imageHeight}px`
     },
     methods: {
       handlePlaylist(playlist) {
         const bottom = playlist.length > 0 ? '60px' : ''
-        this.$refs.list.$el.style.bottom = bottom
-        this.$refs.list.refresh()
+        this.$refs.scrollWrapper.style.bottom = bottom
+        this.$refs.scroll.refresh()
       },
       scroll(pos) {
         this.scrollY = pos.y
@@ -136,14 +139,13 @@
       }
     },
     components: {
-      Scroll,
       Loading,
       SongList
     }
   }
 </script>
 
-<style scoped lang="stylus" rel="stylesheet/stylus">
+<style lang="stylus" rel="stylesheet/stylus">
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
 
@@ -218,12 +220,14 @@
       position: relative
       height: 100%
       background: $color-background
-    .list
+    .scroll-wrapper
       position: absolute
       top: 0
       bottom: 0
       width: 100%
       background: $color-background
+      .cube-scroll-wrapper
+        overflow: visible
       .song-list-wrapper
         padding: 20px 30px
       .loading-container

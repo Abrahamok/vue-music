@@ -9,7 +9,7 @@
             <span class="clear" @click="showConfirm"><i class="icon-clear"></i></span>
           </h1>
         </div>
-        <scroll ref="listContent" :data="sequenceList" class="list-content" :refreshDelay="refreshDelay">
+        <cube-scroll ref="listContent" class="list-content">
           <transition-group ref="list" name="list" tag="ul">
             <li :key="item.id" class="item" v-for="(item,index) in sequenceList"
                 @click="selectItem(item,index)">
@@ -23,7 +23,7 @@
               </span>
             </li>
           </transition-group>
-        </scroll>
+        </cube-scroll>
         <div class="list-operate">
           <div @click="addSong" class="add">
             <i class="icon-add"></i>
@@ -34,26 +34,22 @@
           <span>关闭</span>
         </div>
       </div>
-      <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnText="清空"></confirm>
       <add-song ref="addSong"></add-song>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import {mapActions} from 'vuex'
-  import {playMode} from 'common/js/config'
-  import Scroll from 'base/scroll/scroll'
-  import Confirm from 'base/confirm/confirm'
+  import { mapActions } from 'vuex'
+  import { playMode } from 'common/js/config'
   import AddSong from 'components/add-song/add-song'
-  import {playerMixin} from 'common/js/mixin'
+  import { playerMixin } from 'common/js/mixin'
 
   export default {
     mixins: [playerMixin],
     data() {
       return {
-        showFlag: false,
-        refreshDelay: 120
+        showFlag: false
       }
     },
     computed: {
@@ -73,7 +69,13 @@
         this.showFlag = false
       },
       showConfirm() {
-        this.$refs.confirm.show()
+        this.$createConfirm({
+          text: '是否清空播放列表',
+          confirmBtnText: '确定',
+          onConfirm: () => {
+            this.confirmClear()
+          }
+        }).show()
       },
       confirmClear() {
         this.deleteSongList()
@@ -132,14 +134,12 @@
       }
     },
     components: {
-      Scroll,
-      Confirm,
       AddSong
     }
   }
 </script>
 
-<style scoped lang="stylus" rel="stylesheet/stylus">
+<style scoped="" lang="stylus" rel="stylesheet/stylus">
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
 

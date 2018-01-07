@@ -32,7 +32,7 @@
               <div class="playing-lyric">{{playingLyric}}</div>
             </div>
           </div>
-          <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+          <cube-scroll class="middle-r" ref="lyricList">
             <div class="lyric-wrapper">
               <div v-if="currentLyric">
                 <p ref="lyricLine"
@@ -44,7 +44,7 @@
                 <p>{{pureMusicLyric}}</p>
               </div>
             </div>
-          </scroll>
+          </cube-scroll>
         </div>
         <div class="bottom">
           <div class="dot-wrapper">
@@ -114,7 +114,6 @@
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import { playMode } from 'common/js/config'
   import Lyric from 'lyric-parser'
-  import Scroll from 'base/scroll/scroll'
   import { playerMixin } from 'common/js/mixin'
   import Playlist from 'components/playlist/playlist'
 
@@ -517,7 +516,6 @@
     components: {
       ProgressBar,
       ProgressCircle,
-      Scroll,
       Playlist
     }
   }

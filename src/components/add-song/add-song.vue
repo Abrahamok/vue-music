@@ -12,23 +12,22 @@
       </div>
       <div class="shortcut" v-show="!query">
         <switches :switches="switches" :currentIndex="currentIndex" @switch="switchItem"></switches>
-        <div class="list-wrapper">
-          <scroll ref="songList" v-if="currentIndex===0" class="list-scroll" :data="playHistory">
+        <div class="scroll-wrapper">
+          <cube-scroll ref="songList" v-if="currentIndex===0" class="list-scroll" :data="playHistory">
             <div class="list-inner">
               <song-list :songs="playHistory" @select="selectSong">
               </song-list>
             </div>
-          </scroll>
-          <scroll :refreshDelay="refreshDelay" ref="searchList" v-if="currentIndex===1" class="list-scroll"
-                  :data="searchHistory">
+          </cube-scroll>
+          <cube-scroll ref="searchList" v-if="currentIndex===1" class="list-scroll">
             <div class="list-inner">
               <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
             </div>
-          </scroll>
+          </cube-scroll>
         </div>
       </div>
       <div class="search-result" v-show="query">
-        <suggest :query="query" :showSinger="showSinger" @select="selectSuggest" @listScroll="blurInput"></suggest>
+        <suggest :query="query" :showSinger="showSinger" @select="selectSuggest"></suggest>
       </div>
       <top-tip ref="topTip">
         <div class="tip-title">
@@ -44,7 +43,6 @@
   import SearchBox from 'base/search-box/search-box'
   import SongList from 'base/song-list/song-list'
   import SearchList from 'base/search-list/search-list'
-  import Scroll from 'base/scroll/scroll'
   import Switches from 'base/switches/switches'
   import TopTip from 'base/top-tip/top-tip'
   import Suggest from 'components/suggest/suggest'
@@ -120,7 +118,6 @@
       SearchBox,
       SongList,
       SearchList,
-      Scroll,
       Switches,
       TopTip,
       Suggest
@@ -164,7 +161,7 @@
     .search-box-wrapper
       margin: 20px
     .shortcut
-      .list-wrapper
+      .scroll-wrapper
         position: absolute
         top: 165px
         bottom: 0

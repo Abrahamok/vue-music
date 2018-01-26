@@ -87,6 +87,10 @@
         getRecommend().then((res) => {
           if (res.code === ERR_OK) {
             this.recommends = res.data.slider
+            this.recommends.unshift({
+              linkUrl: 'https://coding.imooc.com/class/107.html',
+              picUrl: 'https://img.mukewang.com/5a5d5b790001505309360316.jpg'
+            })
           }
         })
       },

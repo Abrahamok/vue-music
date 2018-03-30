@@ -2,6 +2,7 @@
   <div id="app" @touchmove.prevent>
     <m-header></m-header>
     <tab></tab>
+    <!-- 把dom缓存到内存中，不会每次都请求 -->
     <keep-alive>
       <router-view></router-view>
     </keep-alive>

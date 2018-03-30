@@ -1,6 +1,6 @@
 # vue-music
 
-> 音乐播放器
+> 慕课网黄轶老师音乐播放器课程，evan练习代码
 
 ## Build Setup
 

@@ -11,6 +11,7 @@ export function getRecommend () {
     needNewCode: 1
   })
 
+  // 这里返回一个promise对象
   return jsonp(url, data, options)
 }
 
@@ -35,6 +36,7 @@ export function getDiscList() {
   return axios.get(url, {
     params: data
   }).then((res) => {
+    // 这里返回一个Promise的resolve方法，把需要的参数传递出去
     return Promise.resolve(res.data)
   })
 }

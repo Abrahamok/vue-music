@@ -1,10 +1,13 @@
 <template>
   <div class="recommend">
+    <!-- 在这一层做引用，初始化BScroll，数据加载后在渲染，要记得加上data -->
     <scroll ref="scroll" class="recommend-content" :data="discList">
+      <!-- BScroll的层级是父子级，子级只有第一个元素才会滚动，想要下面两个同级的div同时滚动，需要在外层包裹一层div，作为外层的一个子元素， -->
       <div>
         <!-- 从服务端加载数据，会有延迟，等抓到数据后，在加载slider组件，这样slider里的mounted周期就能拿到数据了 -->
         <div class="slider-wrapper" v-if="banners.length">
           <slider>
+            <!-- slider组件里面的插槽 -->
             <div v-for="(item, index) in banners" :key="index">
               <a :href="item.linkUrl">
                 <img @load="loadImg" class="needsclick" :src="item.picUrl" />

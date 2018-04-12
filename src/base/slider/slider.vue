@@ -21,30 +21,31 @@
         currentPageIndex: 0
       }
     },
+    // 给slider组件几个初始值
     props: {
-      loop: {
+      loop: { // 是否可以轮播
         type: Boolean,
         default: true
       },
-      autoPlay: {
+      autoPlay: { // 自动轮播
         type: Boolean,
         default: true
       },
-      interval: {
+      interval: { // 自动录播间隔
         type: Number,
         default: 4000
       }
     },
     mounted() {
       setTimeout(() => {
-        this._setSliderWidth()
-        this._initDots() // 就那个小点
-        this._initSlider()
+        this._setSliderWidth() // 横向滚动，要先设置slider的宽度
+        this._initDots() // 就那个小点,因为是自动轮播，BScroll会自动在前后加一个sliderGroup，为了保持数量一直，要在BScroll之前初始化
+        this._initSlider() // 初始化BetterScroll在mounted里，等dom已经ready的时候
 
         if (this.autoPlay) {
-          this._play()
+          this._play() // 自动播放
         }
-      }, 20) // 浏览器的刷新通常是17毫秒一次
+      }, 20) // 浏览器的刷新通常是17毫秒一次，初始化操作放在20毫秒后，比较保险
 
       window.addEventListener('resize', () => {
         if (!this.slider) {
@@ -62,12 +63,14 @@
       _setSliderWidth(isResize) {
         // 获取sliderGroup下children的dom,注意作用域是本组件this
         this.children = this.$refs.sliderGroup.children
+        console.log(this.children.length)
 
         let sliderWidth = 0
         // 轮播图宽度是一屏，slider的宽度=所有轮播图宽度之和
         let clientWidth = this.$refs.slider.clientWidth
         for (let i = 0; i < this.children.length; i++) {
           let child = this.children[i]
+          // 轮播组件设置样式，让img自适应宽度
           addClass(child, 'slider-item')
 
           child.style.width = clientWidth + 'px'
@@ -86,7 +89,7 @@
       _initSlider() {
         this.slider = new BetterScroll(this.$refs.slider, {
           scrollX: true, // 横向滚动
-          scrollY: false,
+          scrollY: false, // 不允许纵向滚动
           momentum: false, // 当快速滑动时是否开启滑动惯性
           snap: true, // 专门给slider配置应用
           snapLoop: this.loop, // 是否可以无缝循环轮播
@@ -94,9 +97,10 @@
           snapSpeed: 400
         })
 
-        // 轮播图滚动的时候触发
+        // 每次轮播图滚动完毕的时候触发
         this.slider.on('scrollEnd', () => {
           let pageIndex = this.slider.getCurrentPage().pageX
+          console.log('第' + pageIndex + '张轮播图')  // 从1开始
           if (this.loop) {
             pageIndex -= 1
           }
@@ -109,7 +113,7 @@
         })
       },
       _initDots() {
-        this.dots = this.children.length
+        this.dots = new Array(this.children.length) // 一个长度为5的空数组
       },
       _play() {
         let pageIndex = this.currentPageIndex + 1
@@ -117,7 +121,7 @@
           pageIndex += 1
         }
         this.timer = setTimeout(() => {
-          this.slider.goToPage(pageIndex, 0, 400)
+          this.slider.goToPage(pageIndex, 0, 400) // 0 横向 400 间隔
         }, this.interval)
       }
     },

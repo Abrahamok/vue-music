@@ -1,3 +1,8 @@
+/**
+ * 给dom元素添加类名
+ * @param {dom} el dom
+ * @param {string} className 类名
+ */
 export function addClass(el, className) {
   if (hasClass(el, className)) {
     return
@@ -7,6 +12,11 @@ export function addClass(el, className) {
   el.className = newClass.join(' ')
 }
 
+/**
+ * 判断dom是否有这个类名
+ * @param {dom} el dom对象
+ * @param {string} className 类名
+ */
 export function hasClass(el, className) {
   let reg = new RegExp('(^|\\s)' + className + '(\\s|$)')
   return reg.test(el.className)
@@ -27,3 +37,4 @@ export function getData(el, name, val) {
     return el.getAttribute(name)
   }
 }
+

@@ -9,15 +9,15 @@
 
   export default {
     props: {
-      probeType: { // 有时候我们需要知道滚动的位置
+      probeType: { // 如果需要知道滚动的位置
         type: Number,
         default: 1
       },
-      click: {
+      click: { // 手动派发点击事件
         type: Boolean,
         default: true
       },
-      data: {
+      data: { // 传进来的数据
         type: Array,
         default: null
       },
@@ -29,7 +29,7 @@
     mounted() {
       setTimeout(() => {
         this._initScroll()
-      }, 20)
+      }, 20) // 浏览器的刷新通常是17毫秒一次，初始化操作放在20毫秒后，比较保险
     },
     methods: {
       _initScroll() {
@@ -86,6 +86,7 @@
       }
     },
     watch: {
+      // data发生变化就refresh
       data() {
         setTimeout(() => {
           this.refresh()

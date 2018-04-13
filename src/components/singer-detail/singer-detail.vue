@@ -29,10 +29,12 @@
       }
     },
     created() {
+      console.log(this.singer)
       this._getDetail()
     },
     methods: {
       _getDetail() {
+        // 限制不能直接点击歌手详情页
         if (!this.singer.id) {
           this.$router.push('/singer')
           return
@@ -43,10 +45,13 @@
           }
         })
       },
+      // 封装歌曲数据
       _normalizeSongs(list) {
         let ret = []
         list.forEach((item) => {
+          // 解构赋值
           let {musicData} = item
+          // 歌曲id和专辑id必须有，工厂模式
           if (musicData.songid && musicData.albummid) {
             ret.push(createSong(musicData))
           }

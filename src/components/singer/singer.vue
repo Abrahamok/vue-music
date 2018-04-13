@@ -25,10 +25,12 @@
       this._getSingerList()
     },
     methods: {
+      // 跳转到歌手详情页，接收list-view组件的派发事件
       selectSinger(singer) {
         this.$router.push({
           path: `/singer/${singer.id}`
         })
+        // 通过vuex把singer数据进行管理，用mapMutations的语法糖
         this.setSinger(singer)
       },
       _getSingerList() {
@@ -38,6 +40,7 @@
           }
         })
       },
+      // 处理后端的API数据
       _normalizeSinger(list) {
         let map = {
           hot: {
@@ -75,6 +78,7 @@
             hot.push(val)
           }
         }
+        // 排序
         ret.sort((a, b) => {
           return a.title.charCodeAt(0) - b.title.charCodeAt(0)
         })

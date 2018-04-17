@@ -25,8 +25,8 @@
         <div class="middle">
           <div class="middle-l">
             <div class="cd-wrapper">
-              <div class="cd">
-                <img class="image"  :src="currentSong.image">
+              <div class="cd" >
+                <img class="image" :class="cdClass" :src="currentSong.image">
               </div>
             </div>
             <div class="playing-lyric-wrapper">
@@ -60,14 +60,14 @@
             <div class="icon i-left" >
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon i-left">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disableClass">
+              <i @click="prev" class="icon-prev"></i>
             </div>
-            <div class="icon i-center">
-              <i class="icon-play" ></i>
+            <div class="icon i-center" :class="disableClass">
+              <i :class="playIcon" @click="togglePlaying"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disableClass">
+              <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon icon-not-favorite" ></i>
@@ -80,20 +80,25 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img width="40" height="40"  :src="currentSong.image">
+          <div class="imgWrapper">
+          <img width="40" height="40" :class="cdClass" :src="currentSong.image">
+          </div>
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
-        <div class="control"></div>
+        <div class="control">
+          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+        </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
     <!-- 当currentSong发生变化时，开始播放 -->
-    <audio ref="audio" :src="currentSong.url"></audio>
+    <!-- 当浏览器能够开始播放指定的音频/视频时，发生 canplay 事件 -->
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error"></audio>
   </div>
 </template>
 
@@ -102,17 +107,48 @@ import {mapGetters, mapMutations} from 'vuex'
 import Scroll from 'base/scroll/scroll'
 
 export default {
+  data () {
+    return {
+      songReady: false // 歌曲加载完毕再播放
+    }
+  },
   computed: {
+    // 播放按钮切换
+    playIcon() {
+      return this.playing ? 'icon-pause' : 'icon-play'
+    },
+    // mini播放按钮切换
+    miniIcon() {
+      return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+    },
+    // cd转圈
+    cdClass() {
+      return this.playing ? 'play' : 'play pause'
+    },
+    // 如果歌曲还没准备好，那么按钮先别点呢 ^_^
+    disableClass() {
+      return this.songReady ? '' : 'disable'
+    },
     ...mapGetters([
       'fullScreen',
       'playList',
-      'currentSong'
+      'currentSong',
+      'playing',
+      'currentIndex'
     ])
   },
   watch: {
+    // 当前歌曲信息加载就开始播放
     currentSong() {
       this.$nextTick(() => {
         this.$refs.audio.play()
+      })
+    },
+    // state中playing的状态变更，执行audio的相关方法
+    playing(status) {
+      const audio = this.$refs.audio
+      this.$nextTick(() => {
+        status ? audio.play() : audio.pause()
       })
     }
   },
@@ -121,11 +157,63 @@ export default {
       // 更改state数据，要用提交mutation
       this.setFullScreen(false)
     },
+    // 全屏播放
     open() {
       this.setFullScreen(true)
     },
+    // 切换播放状态
+    togglePlaying() {
+      if (!this.songReady) {
+        return
+      }
+      // 当前播放的相反状态
+      this.setPlayingState(!this.playing)
+    },
+    // 上一首
+    prev() {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex - 1
+      // 最后一首
+      if (index === -1) {
+        index = this.playList.length
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    // 下一首
+    next() {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex + 1
+      // 第一首
+      if (index === this.playList.length) {
+        index = 0
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    // audio的canplay事件
+    ready() {
+      // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
+      this.songReady = true
+    },
+    // audio error事件，歌曲加载失败也要让点上一首下一首啊
+    error() {
+      this.songReady = true
+    },
     ...mapMutations({
-      setFullScreen: 'SET_FULL_SCREEN'
+      setFullScreen: 'SET_FULL_SCREEN',
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
     })
   },
   components: {
@@ -218,6 +306,8 @@ export default {
                 border: 10px solid rgba(255, 255, 255, 0.1)
               .play
                 animation: rotate 20s linear infinite
+              .pause
+                animation-play-state: paused
           .playing-lyric-wrapper
             width: 80%
             margin: 30px auto 0 auto
@@ -345,7 +435,7 @@ export default {
             &.play
               animation: rotate 10s linear infinite
             &.pause
-              animation-play-state: paused
+              animation-play-state: paused  // 动画暂停
       .text
         display: flex
         flex-direction: column

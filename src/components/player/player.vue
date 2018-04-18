@@ -51,10 +51,12 @@
             <span class="dot"></span>
           </div>
           <div class="progress-wrapper">
-            <span class="time time-l"></span>
+            <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
+              <!-- 进度条 -->
+              <progress-bar ref="progressBar" :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
-            <span class="time time-r"></span>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
             <div class="icon i-left" >
@@ -89,7 +91,10 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+          <progress-circle :radius="radius" :percent="percent">
+            <!-- 当做插槽，要做一个绝对定位，让元素跟圆重合 -->
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -98,18 +103,23 @@
     </transition>
     <!-- 当currentSong发生变化时，开始播放 -->
     <!-- 当浏览器能够开始播放指定的音频/视频时，发生 canplay 事件 -->
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error"></audio>
+    <!-- timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。 -->
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
 import {mapGetters, mapMutations} from 'vuex'
 import Scroll from 'base/scroll/scroll'
+import ProgressBar from 'base/progress-bar/progress-bar'
+import ProgressCircle from 'base/progress-circle/progress-circle'
 
 export default {
   data () {
     return {
-      songReady: false // 歌曲加载完毕再播放
+      songReady: false, // 歌曲加载完毕再播放
+      currentTime: null, // 当前播放事件
+      radius: 32 // 圆的直径
     }
   },
   computed: {
@@ -128,6 +138,9 @@ export default {
     // 如果歌曲还没准备好，那么按钮先别点呢 ^_^
     disableClass() {
       return this.songReady ? '' : 'disable'
+    },
+    percent() {
+      return this.currentTime / this.currentSong.duration
     },
     ...mapGetters([
       'fullScreen',
@@ -150,6 +163,15 @@ export default {
       this.$nextTick(() => {
         status ? audio.play() : audio.pause()
       })
+    },
+    //     原因：当播放器最小化的时候，progress-bar 仍然在监听 percent 的变化，所以在不断计算进度条的位置，然而这个时候由于播放器隐藏，进度条的宽度 this.$refs.progressBar.clientWidth 计算为0，因此计算出来的 offset 也是不对的，导致再次最大化播放器的时候，由于播放器是暂停状态， percent 并不会变化，也不会重新计算这个 offset ，导致如图的 Bug。
+    // 解决方案：当播放器最大化的时候，手动去计算一次 offset，确保进度条的位置正确。
+    fullScreen(newVal) {
+      if (newVal) {
+        setTimeout(() => {
+          this.$refs.progressBar.setProgressOffset(this.percent)
+        }, 20)
+      }
     }
   },
   methods: {
@@ -210,6 +232,25 @@ export default {
     error() {
       this.songReady = true
     },
+    // timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。
+    updateTime(event) {
+      this.currentTime = event.target.currentTime
+    },
+    // 进度条组件派发出来的百分比改变事件
+    onProgressBarChange(persent) {
+      this.$refs.audio.currentTime = this.currentSong.duration * persent
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+    },
+    // 0:21
+    format(interval) {
+      // 向下取整
+      interval = interval | 0
+      const minute = interval / 60 | 0
+      const second = (interval % 60).toString().padStart(2, '0')
+      return `${minute}:${second}`
+    },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
@@ -217,14 +258,17 @@ export default {
     })
   },
   components: {
+    ProgressBar,
+    ProgressCircle,
     Scroll
   }
 }
 </script>
 
 <style scoped lang="stylus">
-    @import "~common/stylus/variable"
+  @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
+
   .player
     .normal-player
       position: fixed

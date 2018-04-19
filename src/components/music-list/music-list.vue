@@ -106,6 +106,7 @@
           index
         })
       },
+      // 随机播放
       random() {
         this.randomPlay({
           list: this.songs

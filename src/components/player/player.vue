@@ -59,8 +59,8 @@
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
-            <div class="icon i-left" >
-              <i class="icon-sequence"></i>
+            <div class="icon i-left" @click="changeMode">
+              <i :class="iconMode"></i>
             </div>
             <div class="icon i-left" :class="disableClass">
               <i @click="prev" class="icon-prev"></i>
@@ -104,7 +104,7 @@
     <!-- 当currentSong发生变化时，开始播放 -->
     <!-- 当浏览器能够开始播放指定的音频/视频时，发生 canplay 事件 -->
     <!-- timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。 -->
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
 
@@ -113,13 +113,17 @@ import {mapGetters, mapMutations} from 'vuex'
 import Scroll from 'base/scroll/scroll'
 import ProgressBar from 'base/progress-bar/progress-bar'
 import ProgressCircle from 'base/progress-circle/progress-circle'
+import {Config} from 'common/js/config'
+import Util from 'common/js/util'
+import Lyric from 'lyric-parser'
 
 export default {
   data () {
     return {
       songReady: false, // 歌曲加载完毕再播放
       currentTime: null, // 当前播放事件
-      radius: 32 // 圆的直径
+      radius: 32, // 圆的直径
+      currentLyric: null // 当前歌曲歌词
     }
   },
   computed: {
@@ -139,22 +143,34 @@ export default {
     disableClass() {
       return this.songReady ? '' : 'disable'
     },
+    // 进度条百分比
     percent() {
       return this.currentTime / this.currentSong.duration
+    },
+    // 播放模式
+    iconMode() {
+      return this.mode === Config.playMode.sequence ? 'icon-sequence' : this.mode === Config.playMode.loop ? 'icon-loop' : 'icon-random'
     },
     ...mapGetters([
       'fullScreen',
       'playList',
       'currentSong',
       'playing',
-      'currentIndex'
+      'currentIndex',
+      'mode',
+      'sequenceList'
     ])
   },
   watch: {
     // 当前歌曲信息加载就开始播放
-    currentSong() {
+    currentSong(newSong, oldSong) {
+      if (newSong.id === oldSong.id) {
+        return
+      }
       this.$nextTick(() => {
         this.$refs.audio.play()
+        // 获取歌词
+        this.getLyric()
       })
     },
     // state中playing的状态变更，执行audio的相关方法
@@ -232,6 +248,20 @@ export default {
     error() {
       this.songReady = true
     },
+    // audio ended事件，播放完了？下一首啊
+    end() {
+      // 如果是单曲循环
+      if (this.mode === Config.playMode.loop) {
+        this.loop()
+      } else {
+        this.next()
+      }
+    },
+    // 单曲循环
+    loop() {
+      this.$refs.audio.currentTime = 0
+      this.$refs.audio.play()
+    },
     // timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。
     updateTime(event) {
       this.currentTime = event.target.currentTime
@@ -243,6 +273,29 @@ export default {
         this.togglePlaying()
       }
     },
+    // 变更播放状态,更改state数据，就要提交mutation
+    changeMode() {
+      const mode = (this.mode + 1) % 3
+      this.setPlayMode(mode)
+
+      // 改变播放模式后，要变更播放列表顺序
+      let list = null
+      if (mode === Config.playMode.random) {
+        list = Util.shuffle(this.sequenceList)
+      } else {
+        list = this.sequenceList
+      }
+      // 确定更改播放模式后的当前歌曲的index
+      this.resetCurrentIndex(list)
+      // 提交mutation
+      this.setPlayList(list)
+    },
+    resetCurrentIndex(list) {
+      let index = list.findIndex((item) => {
+        return item.id === this.currentSong.id
+      })
+      this.setCurrentIndex(index)
+    },
     // 0:21
     format(interval) {
       // 向下取整
@@ -251,10 +304,20 @@ export default {
       const second = (interval % 60).toString().padStart(2, '0')
       return `${minute}:${second}`
     },
+    getLyric() {
+      console.log(this.currentSong)
+      // 这里currentSong能调用Song类下的方法，是因为songList是由一堆Song对象组成的，
+      this.currentSong.getLyric().then((lyric) => {
+        this.currentLyric = new Lyric(lyric)
+        console.log(this.currentLyric)
+      })
+    },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX'
+      setCurrentIndex: 'SET_CURRENT_INDEX',
+      setPlayMode: 'SET_PLAY_MODE',
+      setPlayList: 'SET_FLAYLIST'
     })
   },
   components: {

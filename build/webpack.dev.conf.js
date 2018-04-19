@@ -61,6 +61,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         })
       })
 
+      // 代理歌曲获取请求
       app.get('/api/lyric', function (req, res) {
         const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
 

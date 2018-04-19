@@ -54,7 +54,7 @@
         list.forEach((item) => {
           // 解构赋值
           let {musicData} = item
-          // 歌曲id和专辑id必须有，工厂模式
+          // 歌曲id和专辑id必须有，工厂模式,list是由一大推Song对象组成的，所以Song对象下的函数，currentSong可以调用
           if (musicData.songid && musicData.albummid) {
             ret.push(createSong(musicData))
           }

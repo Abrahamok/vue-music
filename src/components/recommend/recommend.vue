@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend">
+  <div class="recommend" ref="recommend">
     <!-- 在这一层做引用，初始化BScroll，数据加载后在渲染，要记得加上data -->
     <scroll ref="scroll" class="recommend-content" :data="discList">
       <!-- BScroll的层级是父子级，子级只有第一个元素才会滚动，想要下面两个同级的div同时滚动，需要在外层包裹一层div，作为外层的一个子元素， -->
@@ -18,7 +18,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="(item,index) in discList" class="item" :key="index">
+            <li @click="selectItem(item)" v-for="(item,index) in discList" class="item" :key="index">
               <div class="icon">
                 <img v-lazy="item.imgurl" width="60" height="60" alt="">
               </div>
@@ -35,6 +35,7 @@
         <loading></loading>
       </div>
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -44,8 +45,11 @@ import Scroll from 'base/scroll/scroll'
 import Slider from 'base/slider/slider'
 import {getRecommend, getDiscList} from 'api/recommend'
 import {ERR_OK} from 'api/config'
+import {playlistMixin} from 'common/js/mixin'
+import {mapMutations} from 'vuex'
 
 export default {
+  mixins: [playlistMixin],
   data() {
     return {
       banners: [],
@@ -57,6 +61,13 @@ export default {
     this._getDiscList()
   },
   methods: {
+    // mini播放器mixin
+    handlePlaylist(playList) {
+      const bottom = playList.length > 0 ? '60px' : ''
+
+      this.$refs.recommend.style.bottom = bottom
+      this.$refs.scroll.refresh()
+    },
       /**
        * @augments
        * 获取qq音乐数据
@@ -87,7 +98,16 @@ export default {
         this.$refs.scroll.refresh()
         this.checkLoaded = true
       }
-    }
+    },
+    selectItem(item) {
+      this.$router.push({
+        path: `/recommend/${item.dissid}`
+      })
+      this.setDisc(item)
+    },
+    ...mapMutations({
+      setDisc: 'SET_DISC'
+    })
   },
   components: {
     Slider,

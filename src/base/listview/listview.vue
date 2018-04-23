@@ -89,6 +89,10 @@
       scroll(pos) {
         this.scrollY = pos.y
       },
+      // 把scroll组件的refresh方法派发出去
+      refresh() {
+        this.$refs.listview.refresh()
+      },
       // 点击右侧导航列表
       onShortcutTouchStart(event) {
         // 获取dom元素属性data-，类似小程序的获取

@@ -100,7 +100,6 @@
         // 每次轮播图滚动完毕的时候触发
         this.slider.on('scrollEnd', () => {
           let pageIndex = this.slider.getCurrentPage().pageX
-          console.log('第' + pageIndex + '张轮播图')  // 从1开始
           if (this.loop) {
             pageIndex -= 1
           }

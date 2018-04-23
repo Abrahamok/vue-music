@@ -3,14 +3,15 @@ import {mapGetters} from 'vuex'
 export const playlistMixin = {
   computed: {
     ...mapGetters([
-      'playlist'
+      'playList'
     ])
   },
   mounted() {
-    this.handlePlaylist(this.playlist)
+    this.handlePlaylist(this.playList)
   },
+  // keep-alive 组件激活时调用。
   activated() {
-    this.handlePlaylist(this.playlist)
+    this.handlePlaylist(this.playList)
   },
   watch: {
     playlist(newVal) {

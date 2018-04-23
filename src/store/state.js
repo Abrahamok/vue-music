@@ -14,7 +14,11 @@ const state = {
   // 播放类型
   mode: Config.playMode.sequence,
   // 当前播放索引
-  currentIndex: -1
+  currentIndex: -1,
+  // 歌单信息
+  disc: {},
+  // 排行榜列表
+  topList: {}
 }
 
 export default state

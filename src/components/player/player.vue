@@ -1,5 +1,5 @@
 <template>
-  <div class="player" v-show="playList.length>0">
+  <div class="player" v-show="playList.length>0" ref="player">
     <!-- 展开的player -->
     <transition name="normal"
     >
@@ -132,7 +132,7 @@ export default {
   data () {
     return {
       songReady: false, // 歌曲加载完毕再播放
-      currentTime: null, // 当前播放事件
+      currentTime: 0, // 当前播放事件
       radius: 32, // 圆的直径
       currentLyric: null, // 当前歌曲歌词
       currentLyricLineNum: 0, // 当前播放歌词行数
@@ -273,6 +273,11 @@ export default {
     ready() {
       // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true
+      // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
+      if (this.currentLyric) {
+        const currentTime = this.currentSong.duration * this.percent * 1000
+        this.currentLyric.seek(currentTime)
+      }
     },
     // audio error事件，歌曲加载失败也要让点上一首下一首啊
     error() {
@@ -345,11 +350,15 @@ export default {
     getLyric() {
       // 这里currentSong能调用Song类下的方法，是因为songList是由一堆Song对象组成的，
       this.currentSong.getLyric().then((lyric) => {
+        if (this.currentSong.lyric !== lyric) {
+          return
+        }
         // 歌词变动一下就触发handleLyric回调函数
         this.currentLyric = new Lyric(lyric, this.handleLyric)
-        if (this.playing) {
-          // 歌词播放
-          this.currentLyric.play()
+        if (this.playing && this.songReady) {
+          // 这个时候有可能用户已经播放了歌曲，要切到对应位置
+          const currentTime = this.currentSong.duration * this.percent * 1000
+          this.currentLyric.seek(currentTime)
         }
       }).catch(() => { // catch处理！！
         this.currentLyric = null

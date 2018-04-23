@@ -16,3 +16,7 @@ export const currentSong = (state) => {
   // 取不到就设一个空对象
   return state.playList[state.currentIndex] || {}
 }
+
+export const disc = state => state.disc
+
+export const topList = state => state.topList

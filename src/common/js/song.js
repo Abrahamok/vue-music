@@ -33,6 +33,10 @@ export default class Song {
 
 }
 
+export function isValidMusic(musicData) {
+  return musicData.songid && musicData.albummid && (!musicData.pay || musicData.pay.payalbumprice === 0)
+}
+
 /**
  * 获取歌手的歌曲
  * @param {obj} musicData qq音乐的歌手歌曲详情

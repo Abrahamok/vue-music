@@ -13,6 +13,13 @@ export function getHotKey() {
   return jsonp(url, data, options)
 }
 
+/**
+ *  关键字查询
+ * @param {keyword} query 关键字
+ * @param {int} page 页码
+ * @param {Boolean} zhida 是否查询歌手
+ * @param {int} perpage 每页显示文章数
+ */
 export function search(query, page, zhida, perpage) {
   const url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp'
 

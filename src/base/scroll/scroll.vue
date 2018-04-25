@@ -25,6 +25,14 @@
       listenScroll: { // 要不要监听滚动事件
         type: Boolean,
         default: false
+      },
+      pullup: { // 是否开启上拉加载
+        type: Boolean,
+        default: false
+      },
+      beforeScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -50,6 +58,21 @@
           this.scroll.on('scroll', (pos) => {
             // 派发一个scroll事件
             self.$emit('scroll', pos)
+          })
+        }
+
+        // 如果允许上拉加载
+        if (this.pullup) {
+          this.scroll.on('scrollEnd', () => {
+            if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+              this.$emit('scrollToEnd')
+            }
+          })
+        }
+
+        if (this.beforeScroll) {
+          this.scroll.on('beforeScrollStart', () => {
+            this.$emit('beforeScroll')
           })
         }
       },

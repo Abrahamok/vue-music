@@ -18,7 +18,7 @@ const matutions = {
     state.fullScreen = flag
   },
 
-  [types.SET_FLAYLIST](state, list) {
+  [types.SET_PLAYLIST](state, list) {
     state.playList = list
   },
 
@@ -40,6 +40,10 @@ const matutions = {
 
   [types.SET_TOP_LIST](state, list) {
     state.topList = list
+  },
+
+  [types.SET_SEARCH_HISTORY](state, history) {
+    state.searchHistory = history
   }
 }
 

@@ -20,4 +20,22 @@ Util.shuffle = (arr) => {
   return _arr
 }
 
+/**
+ * 节流函数
+ * @param {*} func 函数体
+ * @param {*} delay 延时
+ */
+Util.debounce = (func, delay) => {
+  let timer
+
+  return function (...args) {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      func.apply(this, args)
+    }, delay)
+  }
+}
+
 export default Util

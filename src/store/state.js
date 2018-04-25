@@ -1,4 +1,5 @@
 import {Config} from '../common/js/config'
+import {loadSearch} from 'common/js/cache'
 
 const state = {
   // 歌手信息
@@ -18,7 +19,9 @@ const state = {
   // 歌单信息
   disc: {},
   // 排行榜列表
-  topList: {}
+  topList: {},
+  // 搜索历史
+  searchHistory: loadSearch()
 }
 
 export default state

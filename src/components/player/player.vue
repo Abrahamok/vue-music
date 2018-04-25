@@ -455,7 +455,7 @@ export default {
       setPlayingState: 'SET_PLAYING_STATE',
       setCurrentIndex: 'SET_CURRENT_INDEX',
       setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_FLAYLIST'
+      setPlayList: 'SET_PLAYLIST'
     })
   },
   components: {

@@ -46,30 +46,26 @@
   import {getHotKey} from 'api/search'
   import {ERR_OK} from 'api/config'
   import Suggest from 'components/suggest/suggest'
-  import {mapActions, mapGetters} from 'vuex'
+  import {mapActions} from 'vuex'
   import SearchList from 'base/search-list/search-list'
   import Scroll from 'base/scroll/scroll'
-  import {playlistMixin} from 'common/js/mixin'
+  import {playlistMixin, searchMixin} from 'common/js/mixin'
 
   export default {
-    mixins: [playlistMixin],
+    mixins: [playlistMixin, searchMixin],
     created () {
       // 先调用热门搜索
       this._getHotKey()
     },
     data () {
       return {
-        hotKey: [],
-        query: ''
+        hotKey: []
       }
     },
     computed: {
       forScrollData() {
         return this.hotKey.concat(this.searchHistory)
-      },
-      ...mapGetters([
-        'searchHistory'
-      ])
+      }
     },
     watch: {
       // 如果是从搜索列表切页面回来，要手动刷新一下
@@ -98,32 +94,13 @@
           }
         })
       },
-      // 点热门搜索，把结果映射到searchBox组件中
-      addQuery(query) {
-        this.$refs.searchBox.setQuery(query)
-      },
-      onQueryChange(query) {
-        this.query = query
-      },
-      blurInput() {
-        this.$refs.searchBox.blur()
-      },
-      deleteOne(item) {
-        this.deleteSearchHistory(item)
-      },
       deleteAll() {
         this.clearSearchHistory()
       },
       showConfirm() {
         this.$refs.confirm.show()
       },
-      // 在action中的saveSearchHistory方法，调用cache.js中的saveSearch方法，保存本地缓存，同时返回新数组，通过提交mutation改变state，
-      saveSearch() {
-        this.saveSearchHistory(this.query)
-      },
       ...mapActions([
-        'saveSearchHistory',
-        'deleteSearchHistory',
         'clearSearchHistory'
       ])
     },

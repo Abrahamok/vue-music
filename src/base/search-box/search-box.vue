@@ -22,6 +22,7 @@ export default {
     }
   },
   created () {
+    // 节流搜索
     this.$watch('query', Util.debounce((newQuery) => {
       this.$emit('query', newQuery)
     }, 200))

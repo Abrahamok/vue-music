@@ -1,5 +1,6 @@
 <template>
   <div class="search-list" v-show="searches.length">
+    <!-- 删除做一个动画 -->
     <transition-group name="list" tag="ul">
       <li :key="item" class="search-item" @click="selectItem(item)" v-for="item in searches">
         <span class="text">{{item}}</span>

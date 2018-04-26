@@ -103,11 +103,12 @@
             <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlaylist">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <playlist ref="playlist"></playlist>
     <!-- 当currentSong发生变化时，开始播放 -->
     <!-- 当浏览器能够开始播放指定的音频/视频时，发生 canplay 事件 -->
     <!-- timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。 -->
@@ -116,19 +117,21 @@
 </template>
 
 <script type="text/ecmascript-6">
-import {mapGetters, mapMutations} from 'vuex'
+import {mapGetters, mapMutations, mapActions} from 'vuex'
 import Scroll from 'base/scroll/scroll'
 import ProgressBar from 'base/progress-bar/progress-bar'
 import ProgressCircle from 'base/progress-circle/progress-circle'
 import {Config} from 'common/js/config'
-import Util from 'common/js/util'
 import Lyric from 'lyric-parser'
 import { prefixStyle } from 'common/js/dom'
+import Playlist from 'components/playlist/playlist'
+import {playerMixin} from 'common/js/mixin'
 
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 
 export default {
+  mixins: [playerMixin],
   data () {
     return {
       songReady: false, // 歌曲加载完毕再播放
@@ -162,23 +165,20 @@ export default {
     percent() {
       return this.currentTime / this.currentSong.duration
     },
-    // 播放模式
-    iconMode() {
-      return this.mode === Config.playMode.sequence ? 'icon-sequence' : this.mode === Config.playMode.loop ? 'icon-loop' : 'icon-random'
-    },
+
     ...mapGetters([
       'fullScreen',
-      'playList',
-      'currentSong',
       'playing',
-      'currentIndex',
-      'mode',
-      'sequenceList'
+      'currentIndex'
     ])
   },
   watch: {
     // 当前歌曲信息加载就开始播放
     currentSong(newSong, oldSong) {
+      // 如果播放列表删除完了，currentSong发生改变，这种情况不播放
+      if (!newSong.id) {
+        return
+      }
       if (newSong.id === oldSong.id) {
         return
       }
@@ -273,11 +273,12 @@ export default {
     ready() {
       // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true
+      this.savePlayHistory(this.currentSong)
       // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
-      if (this.currentLyric) {
-        const currentTime = this.currentSong.duration * this.percent * 1000
-        this.currentLyric.seek(currentTime)
-      }
+      // if (this.currentLyric) {
+      //   const currentTime = this.currentSong.duration * this.percent * 1000
+      //   this.currentLyric.seek(currentTime)
+      // }
     },
     // audio error事件，歌曲加载失败也要让点上一首下一首啊
     error() {
@@ -315,29 +316,7 @@ export default {
         this.currentLyric.seek(currentTime * 1000)
       }
     },
-    // 变更播放状态,更改state数据，就要提交mutation
-    changeMode() {
-      const mode = (this.mode + 1) % 3
-      this.setPlayMode(mode)
 
-      // 改变播放模式后，要变更播放列表顺序
-      let list = null
-      if (mode === Config.playMode.random) {
-        list = Util.shuffle(this.sequenceList)
-      } else {
-        list = this.sequenceList
-      }
-      // 确定更改播放模式后的当前歌曲的index
-      this.resetCurrentIndex(list)
-      // 提交mutation
-      this.setPlayList(list)
-    },
-    resetCurrentIndex(list) {
-      let index = list.findIndex((item) => {
-        return item.id === this.currentSong.id
-      })
-      this.setCurrentIndex(index)
-    },
     // 0:21
     format(interval) {
       // 向下取整
@@ -450,18 +429,22 @@ export default {
       this.$refs.middleL.style[transitionDuration] = `${time}ms`
       this.touch.inited = false
     },
+    showPlaylist() {
+      this.$refs.playlist.show()
+    },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
-      setPlayingState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX',
-      setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_PLAYLIST'
-    })
+      setPlayingState: 'SET_PLAYING_STATE'
+    }),
+    ...mapActions([
+      'savePlayHistory'
+    ])
   },
   components: {
     ProgressBar,
     ProgressCircle,
-    Scroll
+    Scroll,
+    Playlist
   }
 }
 </script>

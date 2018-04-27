@@ -6,6 +6,9 @@ const SEARCH_MAX_LEN = 15
 const PLAY_KEY = '__play__'
 const PLAY_MAX_LEN = 200
 
+const FAVORITE_KEY = '__favorite__'
+const FAVORITE_MAX_LEN = 200
+
 /**
  * 插入数组，如果数组中有了，把之前的删除掉，如果超过最大长度，把最后的剔除掉
  * @param {Array} arr 要插入的数组
@@ -84,4 +87,26 @@ export function savePlay(song) {
 
 export function loadPlay() {
   return storage.get(PLAY_KEY, [])
+}
+
+export function saveFavorite(song) {
+  let songs = storage.get(FAVORITE_KEY, [])
+  insertArray(songs, song, (item) => {
+    return item.id === song.id
+  }, FAVORITE_MAX_LEN)
+  storage.set(FAVORITE_KEY, songs)
+  return songs
+}
+
+export function deleteFavorite(song) {
+  let songs = storage.get(FAVORITE_KEY, [])
+  deleteFromArray(songs, (item) => {
+    return item.id === song.id
+  })
+  storage.set(FAVORITE_KEY, songs)
+  return songs
+}
+
+export function loadFavorite() {
+  return storage.get(FAVORITE_KEY, [])
 }

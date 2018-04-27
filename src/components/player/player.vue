@@ -78,8 +78,8 @@
             <div class="icon i-right" :class="disableClass">
               <i @click="next" class="icon-next"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon icon-not-favorite" ></i>
+            <div class="icon i-right" @click="toggleFavorite(currentSong)">
+              <i class="icon" :class="getFavoriteIcon(currentSong)" ></i>
             </div>
           </div>
         </div>
@@ -111,8 +111,9 @@
     <playlist ref="playlist"></playlist>
     <!-- 当currentSong发生变化时，开始播放 -->
     <!-- 当浏览器能够开始播放指定的音频/视频时，发生 canplay 事件 -->
+    <!-- 当音频已经开始播放的时候执行play事件 -->
     <!-- timeupdate 事件在音频/视频（audio/video）的播放位置发生改变时触发。 -->
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
+    <audio ref="audio" :src="currentSong.url" @play="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
 
@@ -185,8 +186,13 @@ export default {
       // 如果上一首歌的歌词还有就停了
       if (this.currentLyric) {
         this.currentLyric.stop()
+        this.currentTime = 0
+        this.playingLyric = ''
+        this.currentLyricLineNum = 0
       }
-      setTimeout(() => {
+      // 一般这种会都次调用setTimeout的情况，都要做一下初始化清理工作
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
         this.$refs.audio.play()
         // 获取歌词
         this.getLyric()
@@ -236,6 +242,7 @@ export default {
       }
       if (this.playList.length === 1) {
         this.loop()
+        return
       } else {
         let index = this.currentIndex - 1
       // 最后一首
@@ -256,6 +263,7 @@ export default {
       }
       if (this.playList.length === 1) {
         this.loop()
+        return
       } else {
         let index = this.currentIndex + 1
       // 第一首

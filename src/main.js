@@ -11,6 +11,11 @@ import 'common/stylus/index.styl'
 // 整个PC所有body下的dom点击都不会有300毫秒的延时
 fastclick.attach(document.body)
 
+/* eslint-disable no-unused-vars */
+import vConsole from 'vconsole'
+
+console.log('vConsole')
+
 // 安装图片懒加载插件
 Vue.use(VueLazyLoad, {
   loading: require('common/image/default.png')

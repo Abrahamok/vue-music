@@ -6,7 +6,7 @@
     </div>
 
     <div ref="shortcut" class="shortcut-wrapper" v-show="!query">
-      <scroll class="shortcut" :data="forScrollData" ref="scroll">
+      <scroll :refreshDelay="refreshDelay" class="shortcut" :data="forScrollData" ref="scroll">
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -90,7 +90,7 @@
       _getHotKey() {
         getHotKey().then((res) => {
           if (res.code === ERR_OK) {
-            this.hotKey = res.data.hotkey.slice(0, 10)
+            this.hotKey = res.data.hotkey.slice(0, 15)
           }
         })
       },

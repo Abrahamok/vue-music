@@ -144,7 +144,7 @@
       _genResult(data) {
         let ret = []
         if (data.zhida && data.zhida.singerid && this.page === 1) {
-          // 对象扩展运算符
+          // 对象合并
           ret.push({...data.zhida, ...{type: TYPE_SINGER}})
         }
         return processSongsUrl(this._normalizeSongs(data.song.list)).then((songs) => {

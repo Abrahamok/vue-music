@@ -38,4 +38,12 @@ Util.debounce = (func, delay) => {
   }
 }
 
+/**
+ * 数组去重
+ * @param {*} array 数组
+ */
+Util.dedupe = (array) => {
+  return Array.from(new Set(array))
+}
+
 export default Util

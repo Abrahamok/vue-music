@@ -46,4 +46,17 @@ Util.dedupe = (array) => {
   return Array.from(new Set(array))
 }
 
+/**
+ * 把二维数组拍平
+ * @param {*} children 二位数组
+ */
+Util.simpleNormalizeChildren = (children) => {
+  for (let i = 0; i < children.length; i++) {
+    if (Array.isArray(children[i])) {
+      return Array.prototype.concat.apply([], children)
+    }
+  }
+  return children
+}
+
 export default Util
